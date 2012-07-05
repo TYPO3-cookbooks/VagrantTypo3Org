@@ -1,0 +1,32 @@
+#!/usr/bin/env ruby
+#^syntax detection
+
+site 'http://community.opscode.com/api/v1'
+
+cookbook 'apache2', '>= 1.1.2'
+cookbook 'application', '= 0.99.14'
+cookbook 'apt', '= 1.4.2'
+cookbook 'aws', '= 0.99.1'
+cookbook 'build-essential', '>= 1.0.0'
+cookbook 'chef_handler'
+cookbook 'database', '= 1.1.0'
+cookbook 'git', '= 0.10.0'
+cookbook 'imagemagick', '= 0.2.0'
+cookbook 'java', '= 1.1'
+cookbook 'minitest-handler'
+cookbook 'mysql', '= 1.2.2'
+cookbook 'ohai', '= 1.0.0'
+cookbook 'openssl', '= 1.0.0'
+cookbook 'rsync', '= 0.7'
+cookbook 'subversion', '= 0.8.3'
+cookbook 'timezone', '>= 0.0.1'
+cookbook 'tmux', '= 1.0.0'
+cookbook 'xfs', '= 1.0.0'
+
+#cookbook 'chef-solo-search',
+#  :git => 'git://github.com/edelight/chef-solo-search.git'
+
+#cookbook 'redmine',
+#  :git => 'https://github.com/ctrabold/chef-redmine',
+#  :ref => 'development'
+#  :path => 'config/vm/cookbooks/redmine'

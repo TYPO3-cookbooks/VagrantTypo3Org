@@ -1,0 +1,58 @@
+{
+  "id": "t3org-dev",
+  "server_roles": [
+    "typo3"
+  ],
+  "type": {
+    "typo3": [
+      "typo3"
+    ]
+  },
+  "database_master_role": [
+    "typo3"
+  ],
+  "databases": {
+    "production": {
+      "encoding": "utf8",
+      "username": "t3orgdev",
+      "adapter": "mysql",
+      "password": "t3orgdev",
+      "database": "t3orgdev",
+      "host": "localhost"
+    }
+  },
+  "stages": {
+    "production": {
+      "document_root": "/var/www/vhosts/t3org.dev/www",
+      "server_name": "t3org.dev",
+      "server_aliases": [
+        "www.t3org.dev"
+      ]
+    }
+  },
+  "mysql_root_password": {
+    "production": "joh316"
+  },
+  "mysql_debian_password": {
+    "production": "joh316"
+  },
+  "mysql_repl_password": {
+    "production": "joh316"
+  },
+  "owner": "www-data",
+  "group": "www-data",
+  "packages": {
+    "curl": "",
+    "php5-mysql": "",
+    "php5-curl": "",
+    "php5-gd": "",
+    "php5-adodb": "",
+    "php5-mcrypt": "",
+    "php5-sqlite": "",
+    "php5-xsl": "",
+    "imagemagick": ""
+  },
+  "pears": {
+    "phpunit/PHPUnit": ""
+  }
+}

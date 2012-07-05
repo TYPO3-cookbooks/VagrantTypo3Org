@@ -1,0 +1,149 @@
+#!/bin/bash
+
+# Get absolute path to main directory
+ABSPATH=$(cd "${0%/*}" 2>/dev/null; echo "${PWD}/${0##*/}")
+SOURCE_DIR=`dirname "${ABSPATH}"`
+
+#######################################################################
+
+# Check for required binaries
+if ! which mysql > /dev/null; then
+    echo "mysql command not found in path, please correct and run again"
+    exit 1
+fi
+if ! which rsync > /dev/null; then
+    echo "rsync command not found in path, please correct and run again"
+    exit 1
+fi
+
+# Get command line parameters
+USAGE() {
+    echo "Usage:"
+    echo "   $0 [-u <db user>] [-p <db pass> | -P] [-h <db host>] -d <database> -r <portal root> -s <backup directory> [-f] [-v]"
+    echo
+    echo "Option -P forces MySQL to ask for the password on the standard input."
+    echo "Option -f skips confirmation prompt"
+    echo "Option -v add verbose output"
+    exit $1
+}
+ARG_DBUSER=""
+ARG_DBPASS=""
+ARG_DBUSEPASS=""
+ARG_DBHOST="localhost"
+ARG_DB=""
+ARG_DESTDIR=""
+ARG_SRCDIR=""
+ARG_FORCE=""
+ARG_VERBOSE=""
+while getopts 'u:p:Ph:d:r:s:fv' OPTION ; do
+    case "${OPTION}" in
+        u)
+            ARG_DBUSER="${OPTARG}"
+            ;;
+
+        p)
+            ARG_DBPASS="${OPTARG}"
+            ;;
+
+        P)
+            ARG_DBUSEPASS="yes"
+            ;;
+
+        h)
+            ARG_DBHOST="${OPTARG}"
+            ;;
+
+        d)
+            ARG_DB="${OPTARG}"
+            ;;
+
+        r)
+            ARG_DESTDIR="${OPTARG}"
+            ;;
+
+        s)
+            ARG_SRCDIR="${OPTARG}"
+            ;;
+
+        f)
+            ARG_FORCE="yes"
+            ;;
+
+        v)
+            ARG_VERBOSE="yes"
+            ;;
+
+        \?)
+            USAGE 1
+            ;;
+    esac
+done
+
+# Check command line parameters
+if [ -z "${ARG_DESTDIR}" ]; then
+    echo "$0: missing required option -- r"
+    USAGE 1
+elif [ ! -d "${ARG_DESTDIR}" ]; then
+    echo "Incorrect destination directory, directory does not exist"
+    USAGE 1
+fi
+if [ -z "${ARG_SRCDIR}" ]; then
+    echo "$0: missing required option -- s"
+    USAGE 1
+elif [ ! -d "${ARG_SRCDIR}/database" -o ! -d "${ARG_SRCDIR}/filesystem" ]; then
+    echo "Incorrect source directory, must be the folder containing the database and filesystem subfolders"
+    USAGE 1
+fi
+
+# Prepare MySQL command line parameters
+MYSQL_OPTIONS=""
+if [ -n "${ARG_DBUSER}" ]; then
+    MYSQL_OPTIONS="${MYSQL_OPTIONS} -u${ARG_DBUSER}"
+fi
+if [ -n "${ARG_DBHOST}" ]; then
+    MYSQL_OPTIONS="${MYSQL_OPTIONS} -h${ARG_DBHOST}"
+fi
+if [ -z "${ARG_DB}" ]; then
+    echo "$0: missing required option -- d"
+    USAGE 1
+fi
+if [ -n "${ARG_DBUSEPASS}" ]; then
+    MYSQL_OPTIONS="${MYSQL_OPTIONS} -p"
+elif [ -n "${ARG_DBPASS}" ]; then
+    MYSQL_OPTIONS="${MYSQL_OPTIONS} -p${ARG_DBPASS}"
+fi
+
+if [ -z "${ARG_FORCE}" ]; then
+    echo "About to delete database and restore backup from ${ARG_SRCDIR} into ${ARG_DESTDIR}"
+    echo "using database ${ARG_DB}@${ARG_DBHOST}"
+    echo -n "Press <ENTER> to continue or <CTRL>-C to abort... "
+    read
+    echo
+fi
+
+# Deploy filesystemystem
+[ -n "${ARG_VERBOSE}" ] && echo -n "Deploying filesystem... "
+rsync -rlpt --delete "${ARG_SRCDIR}/filesystem/" "${ARG_DESTDIR}"
+mkdir -p "${ARG_DESTDIR}/htdocs/typo3temp"
+[ -n "${ARG_VERBOSE}" ] && echo "done"
+
+echo "mysql ${MYSQL_OPTIONS}"
+
+# Empty Database
+[ -n "${ARG_VERBOSE}" ] && echo "Emptying database... "
+mysql ${MYSQL_OPTIONS} -e "DROP DATABASE IF EXISTS \`${ARG_DB}\`"
+mysql ${MYSQL_OPTIONS} -e "CREATE DATABASE \`${ARG_DB}\`"
+
+# Deploy database
+[ -n "${ARG_VERBOSE}" ] && echo "Deploying database... "
+(
+    cd "${ARG_SRCDIR}/database"
+
+    for SQL in structure.sql data_*.sql full_*.sql;  do
+        if [ -r "${SQL}" ]; then
+            [ -n "${ARG_VERBOSE}" ] && echo -n " - ${SQL}... "
+            mysql ${MYSQL_OPTIONS} "${ARG_DB}" < "${SQL}"
+            [ -n "${ARG_VERBOSE}" ] && echo "done"
+        fi
+    done
+); [ $? -eq 0 ]
