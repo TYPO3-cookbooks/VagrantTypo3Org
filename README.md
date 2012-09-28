@@ -34,7 +34,7 @@ The first commands will check if the needed software is installed.
 	# Test the website
 	curl t3org.dev
 
-	# Sugestion to access the virtual machine from outside
+	# Sugestion to access the virtual machine from "outside"
 	open Vagrantfile
 	# -> comment out "config.vm.network" line
 	vagrant reload
