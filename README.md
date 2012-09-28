@@ -14,7 +14,7 @@ The first commands will check if the needed software is installed.
 	chef-solo --help    -> Refer to "Chef" chapter if command missing
 
 	# Add a new image that will be stored into ~/.vagrant.d/boxes/
-	vagrant box add debian-6-amd64 http://dl.dropbox.com/u/1467717/VirtualBoxes/debian-6-amd64.box
+	vagrant box add squeeze https://dl.dropbox.com/u/1467717/VirtualBoxes/squeeze.box
 
 	# Download Recipe
 	git clone git://github.com/fudriot/chef-t3org.git

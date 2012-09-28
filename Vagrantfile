@@ -4,8 +4,8 @@
 Vagrant::Config.run do |config|
   config.ssh.max_tries = 100
 
-  config.vm.box = "debian-6-amd64"
-  config.vm.box_url = "http://dl.dropbox.com/u/1467717/VirtualBoxes/debian-6-amd64.box"
+  config.vm.box = "squeeze"
+  config.vm.box_url = "https://dl.dropbox.com/u/1467717/VirtualBoxes/squeeze.box"
   config.vm.boot_mode = :gui
   #config.vm.network :hostonly, "192.168.156.122"
   config.vm.host_name = 'typo3.dev t3org.dev'
