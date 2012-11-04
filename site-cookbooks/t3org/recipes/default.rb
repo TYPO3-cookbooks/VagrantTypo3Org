@@ -85,7 +85,7 @@ end
 # Deploy typo3 package
 #######################################
 bash "deploy_typo3_package_can_take_some_time" do
-  not_if {::File.exists? "#{home_directory}/htdocs"}
+  not_if {::File.exists? "#{home_directory}/www/typo3/"}
   user "root"
   code <<-EOF
 
@@ -112,4 +112,12 @@ bash "deploy_typo3_package_can_take_some_time" do
     #exit 1
   EOF
   notifies :restart, "service[apache2]"
+  notifies :run, "execute[solr-updateConnections]"
+end
+
+execute "solr-updateConnections" do
+  command "php #{home_directory}/www/typo3/cli_dispatch.phpsh solr updateConnections"
+  user "www-data"
+  group "www-data"
+  action :nothing
 end
