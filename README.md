@@ -2,7 +2,7 @@
 
 This is a repository used for setting up a development version of typo3.org website.
 
-For the first installation, consider one good hour to walk through all the steps. The time will depend on the speed of your network along to the the performance of your machine. There will about +500 Mb to download which includes a virtual machine and the typo3.org image.
+For the first installation, consider one good hour to walk through all the steps. The time will depend on the speed of your network along to the the performance of your machine. There will about 1 GB to download which includes a virtual machine and the typo3.org image.
 
 # Quick set up guide
 
@@ -44,13 +44,15 @@ The first commands will check if the needed software is installed.
 
 Refer to the troubleshooting section below if any problem pops up during installation.
 
+The credentials for backend login are `admin` with password `typo3`.
+
 # Installation of the software
 
 ## Chef
 
 To get started you need a environment as described here:
 
-  http://wiki.opscode.com/display/chef/Workstation+Setup
+  <http://wiki.opscode.com/display/chef/Workstation+Setup>
 
 You'll especially need
 
@@ -65,16 +67,15 @@ To install Chef on your system, type:
 
 ## Vagrant
 
-Vagrant can be downloaded and installed from the website http://vagrantup.com/
+Vagrant can be downloaded and installed from the website [vagrantup.com](http://vagrantup.com/)
 
 	# Run as sudo if permission issue
 	gem update --system
 	gem install vagrant
 
-## Virtualbox
+## VirtualBox
 
-VirtualBox is a powerful x86 and AMD64/Intel64 virtualization product for enterprise as well as home use.
-Follow this download link to install it on your system https://www.virtualbox.org/wiki/Downloads
+Follow this download link to install VirtualBox on your system <https://www.virtualbox.org/wiki/Downloads>.
 
 ## Gems
 
@@ -116,7 +117,22 @@ If that helps, you might try adding the following line to /etc/rc.local (right b
 
 	sh /etc/init.d/networking restart
 
-(Source: https://github.com/mitchellh/vagrant/issues/391)
+(Source: <https://github.com/mitchellh/vagrant/issues/391>)
+
+### Mounting shared folders after VirtualBox Guest Additions upgrade fails
+
+If the VM upgrades the VirtualBox Guest Additions automatically and the kernel modules are rebuilt, a `vagrant up` might fail with the following error:
+
+	[t3o-web] Mounting shared folders...
+	[t3o-web] -- v-root: /vagrant
+	The following SSH command responded with a non-zero exit status.
+	Vagrant assumes that this means the command failed!
+
+	mount -t vboxsf -o uid=`id -u vagrant`,gid=`id -g vagrant` v-root /vagrant
+
+To resolve that error, just do a `vagrant reload`, which will cause the VM to reboot and do the deployment during the successful bootup.
+
+Note: If the `vagrant up` fails for setting up the first VM `t3o-web`, the second VM `t3o-solr` isn't created at all. To do so, type `vagrant up t3o-solr` (which will then very likely also fail after rebuilding the kernel modules, so just issue `vagrant reload` once again). 
 
 ### Debian security updates throws a 404
 At your first "vagrant up", vagrant tries to apply all the chef recipes.
