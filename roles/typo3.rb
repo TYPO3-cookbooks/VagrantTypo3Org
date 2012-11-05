@@ -3,7 +3,8 @@ description "TYPO3 setup"
 
 run_list(
   "recipe[mysql::server]",
-  "recipe[application]"
+  "recipe[application]",
+  "recipe[typo3::scheduler]"
 =begin
   "recipe[typo3::source]",
   "recipe[typo3::introduction]",
