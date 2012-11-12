@@ -27,9 +27,9 @@ Vagrant::Config.run do |global_config|
       config.vm.network :hostonly, ipaddress
       config.vm.host_name = name
 
-#      if name == "t3o-web"
-#        config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", {:create => true, :nfs => false}
-#      end
+      if name == "t3o-web"
+        config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
+      end
 
       # set auto_update to false, if do NOT want to check the correct additions
       # version when booting this machine
