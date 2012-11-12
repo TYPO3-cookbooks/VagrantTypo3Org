@@ -4,7 +4,8 @@ description "TYPO3 setup"
 run_list(
   "recipe[mysql::server]",
   "recipe[application]",
-  "recipe[typo3::scheduler]"
+  "recipe[typo3::scheduler]",
+  "recipe[php::module_curl]"
 =begin
   "recipe[typo3::source]",
   "recipe[typo3::introduction]",
