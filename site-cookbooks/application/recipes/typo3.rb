@@ -46,6 +46,8 @@ if app['pears']
   end
 end
 
+include_recipe "graphicsmagick"
+
 #######################################
 # Created database for application
 #######################################
