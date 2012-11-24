@@ -29,7 +29,7 @@
 t3o_package = "t3o-vagrant"
 t3o_package_compressed = "t3o-vagrant-big-file-being-downloaded.tar.gz"
 t3o_package_url = "http://media.dev.t3o-relaunch-week.de/artifacts/t3o-vagrant.tar.gz"
-storing_directory = "/root"
+storing_directory = "/var/cache/t3org.dev"
 home_directory = "/var/www/vhosts/t3org.dev"
 
 #######################################

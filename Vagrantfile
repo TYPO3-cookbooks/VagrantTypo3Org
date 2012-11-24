@@ -28,8 +28,11 @@ Vagrant::Config.run do |global_config|
       config.vm.host_name = name
 
       if name == "t3o-web"
+        config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", {:create => true}
         config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
       end
+
+      config.vm.share_folder "apt-cache", "/var/cache/apt/archives", "./tmp/apt", {:create => true}
 
       # set auto_update to false, if do NOT want to check the correct additions
       # version when booting this machine
