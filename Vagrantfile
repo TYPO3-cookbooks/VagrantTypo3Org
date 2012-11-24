@@ -47,18 +47,12 @@ Vagrant::Config.run do |global_config|
         chef.log_level      = :debug
 
         # List the recipies you are going to work on/need.
-        chef.add_role     "debian"
-        chef.add_role     "base"
-        chef.add_role     "vagrant"
-        chef.add_role     "typo3"
-        chef.add_role     "t3org"
-
         run_list = []
         run_list << "role[debian]"
         run_list << "role[base]"
         run_list << "role[vagrant]"
         run_list << ENV['CHEF_RUN_LIST'].split(",") if ENV.has_key?('CHEF_RUN_LIST')
-        chef.run_list = [options[:run_list].split(","), run_list].flatten
+        chef.run_list = [run_list, options[:run_list].split(",")].flatten
 
       end
 
