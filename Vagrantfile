@@ -1,16 +1,21 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+# if you don't want to develop on the TER FE or Solr search itself, feel free to comment out the t3o-solr part
 vms = {
   "t3o-web" => {
     :hostname  => "typo3.dev t3org.dev",
     :ipaddress => "192.168.156.122",
-    :run_list => "role[typo3],role[t3org]"
+    :run_list => "role[typo3],role[t3org]",
+    :cpus => "2",
+    :memory => "1024"
   },
   "t3o-solr" => {
     :hostname  => "t3o-solr.dev",
     :ipaddress => "192.168.156.123",
-    :run_list => "role[solr]"
+    :run_list => "role[solr]",
+    :cpus => "1",
+    :memory => "1024"
   }
 }
 
@@ -59,7 +64,8 @@ Vagrant::Config.run do |global_config|
       config.vm.customize [
         "modifyvm", :id,
         "--name", name,
-        "--memory", "1024"
+        "--memory", options[:memory] || "1024",
+        "--cpus", options[:cpus] || "1"
       ]
       config.vm.customize [
         "setextradata", :id,
