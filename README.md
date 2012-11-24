@@ -10,18 +10,11 @@ The first commands will check if the needed software is installed.
 
 	# Test if your system contains all the necessary software.
 	vagrant help        -> Refer to "Vagrant" and "Virtualbox" chapter if command missing
-	bundle help         -> Refer to "Gems" chapter if command missing
 	chef-solo --help    -> Refer to "Chef" chapter if command missing
 
-	# Add a new image that will be stored into ~/.vagrant.d/boxes/
-	vagrant box add squeeze https://dl.dropbox.com/u/1467717/VirtualBoxes/squeeze.box
-
-	# Download Recipe
-	git clone git://github.com/fudriot/chef-t3org.git
-	cd chef-t3org
-
-	# Install Gem dependencies
-	bundle install
+	# Download Cookbooks
+	git clone git://git.typo3.org/Teams/Server/Vagrant/Typo3Org.git
+	cd Typo3Org
 
 	# Fire up installation
 	# Refer to the troubleshooting below if anything goes wrong.
@@ -29,22 +22,16 @@ The first commands will check if the needed software is installed.
 
 	# Enter virtual machine by using vagrant itself.
 	# The default username / password is vagrant / vagrant
-	vagrant ssh
+	vagrant ssh t3o-web
 
 	# Test the website
 	curl t3org.dev
 
-	# Sugestion to access the virtual machine from "outside"
-	open Vagrantfile
-	# -> comment out "config.vm.network" line
-	vagrant reload
-
-	# Files system is at:
-	cd /var/www/vhost/t3org.dev
-
 Refer to the troubleshooting section below if any problem pops up during installation.
 
 The credentials for backend login are `admin` with password `typo3`.
+
+The document root of the virtual machine is mounted to the `web/htdocs/` folder inside the directory `Typo3Org`. 
 
 # Installation of the software
 
@@ -88,9 +75,6 @@ Bundler manages an application's dependencies through its entire life across man
 # Configure Vagrant file
 
 To adjust configuration open ``Vagrantfile`` file and change settings according to your needs.
-
-	# Define IP of the virtual machine to access it from the host
-	config.vm.network :hostonly, "192.168.156.122"
 
 	# Activate the GUI or run in headless mode
 	config.vm.boot_mode = :gui
@@ -149,7 +133,7 @@ Just run the following commands:
 
 Login in via ssh to your VM (assuming the VM is launched)
 
-	vagrant ssh
+	vagrant ssh t3o-web
 
 Execute manual update
 
