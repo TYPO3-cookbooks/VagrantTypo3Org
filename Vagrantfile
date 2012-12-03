@@ -32,9 +32,10 @@ Vagrant::Config.run do |global_config|
       config.vm.network :hostonly, ipaddress
       config.vm.host_name = name
 
+      share_folder_options = {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
       if name == "t3o-web"
-        config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", {:create => true}
-        config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
+        config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", share_folder_options
+        config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", share_folder_options
       end
 
       config.vm.share_folder "apt-cache", "/var/cache/apt/archives", "./tmp/apt", {:create => true}
@@ -66,6 +67,10 @@ Vagrant::Config.run do |global_config|
         "--name", name,
         "--memory", options[:memory] || "1024",
         "--cpus", options[:cpus] || "1"
+      ]
+      config.vm.customize [
+        "setextradata", :id,
+        "VBoxInternal2/SharedFoldersEnableSymlinksCreate/package", "1"
       ]
       config.vm.customize [
         "setextradata", :id,
