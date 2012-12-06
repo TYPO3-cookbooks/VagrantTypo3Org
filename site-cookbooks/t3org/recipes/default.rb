@@ -28,7 +28,7 @@
 #######################################
 t3o_package = "t3o-vagrant"
 t3o_package_compressed = "t3o-vagrant-big-file-being-downloaded.tar.gz"
-t3o_package_url = "http://st-g.de/fileadmin/downloads/2012-12/t3o-vagrant.tar.gz"
+t3o_package_url = "http://www.dev.t3o.typo3.org/t3o-vagrant.tar.gz"
 storing_directory = "/var/cache/t3org.dev"
 home_directory = "/var/www/vhosts/t3org.dev"
 
