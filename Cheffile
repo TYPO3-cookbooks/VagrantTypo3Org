@@ -4,7 +4,7 @@
 site 'http://community.opscode.com/api/v1'
 
 cookbook 'apache2', '>= 1.1.2'
-cookbook 'application', '= 0.99.14'
+cookbook 'application', '= 1.0.2'
 cookbook 'apt', '= 1.4.2'
 cookbook 'ark', '= 0.0.15'
 cookbook 'aws', '= 0.99.1'
