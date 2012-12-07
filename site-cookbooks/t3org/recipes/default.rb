@@ -54,6 +54,13 @@ template "#{storing_directory}/restore_backup.sh" do
   mode "0755"
 end
 
+template "#{storing_directory}/postinstall.sql" do
+  source "postinstall.sql"
+  owner "root"
+  group "root"
+  mode "0755"
+end
+
 directory storing_directory do
 	action :create
 	recursive true
@@ -81,7 +88,9 @@ end
 # Extract typo3 package
 #######################################
 bash "extract_typo3_package_can_take_some_time" do
-  not_if {::File.exists? "#{storing_directory}/#{t3o_package}"}
+  only_if do
+    node['t3org']['forceInstall'] || !File.exists? ("#{storing_directory}/#{t3o_package}")
+  end
   user "root"
   cwd "#{storing_directory}"
   code <<-EOF
@@ -98,7 +107,9 @@ end
 # Deploy typo3 package
 #######################################
 bash "deploy_typo3_package_can_take_some_time" do
-  not_if {::File.exists? "#{home_directory}/www/typo3/"}
+  only_if do
+    node['t3org']['forceInstall'] || !File.exists? ("#{home_directory}/www/typo3/")
+  end
   user "root"
   code <<-EOF
 
@@ -117,6 +128,9 @@ bash "deploy_typo3_package_can_take_some_time" do
 
     # Create ENABLE_INSTALL_TOOL
     touch #{home_directory}/www/typo3conf/ENABLE_INSTALL_TOOL
+
+    # Apply site specific database changes
+    cat #{storing_directory}/postinstall.sql | mysql -u root -proot t3orgdev
 
     # Todo edit
     # sed '5f4dcc3b5aa765d61d8327deb882cf99';  by 5f4dcc3b5aa765d61d8327deb882cf99
