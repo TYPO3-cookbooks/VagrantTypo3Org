@@ -116,7 +116,8 @@ bash "deploy_typo3_package_can_take_some_time" do
 end
 
 execute "solr-updateConnections" do
-  command "php #{home_directory}/www/typo3/cli_dispatch.phpsh solr updateConnections"
+  # This might fail but is not critical for the provisioning
+  command "php #{home_directory}/www/typo3/cli_dispatch.phpsh solr updateConnections || true"
   user "www-data"
   group "www-data"
   action :nothing
