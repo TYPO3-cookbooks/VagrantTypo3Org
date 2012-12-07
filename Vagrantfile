@@ -64,6 +64,8 @@ Vagrant::Config.run do |global_config|
         chef.roles_path      = ["roles"]
         chef.data_bags_path  = ["data_bags"]
 
+        chef.json = { :t3org => { :forceInstall => true } } unless ENV['REINSTALL'].nil?
+
         # Turn on verbose Chef logging if necessary
         chef.log_level      = :debug
 

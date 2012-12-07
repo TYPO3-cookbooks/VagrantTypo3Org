@@ -148,3 +148,8 @@ And reload your VM
 	vagrant reload
 
 Now, the updates can be applied and the chef magic will start.
+
+## Update the site to the latest version
+
+Run the following command to download and extract the site incl. database again:
+REINSTALL=true vagrant provision t3o-web

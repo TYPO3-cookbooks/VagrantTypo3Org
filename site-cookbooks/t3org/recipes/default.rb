@@ -73,7 +73,8 @@ remote_file "#{storing_directory}/#{t3o_package_compressed}" do
   #Chef::Log.info "Downloading typo3.org package (over 600 Mb)..."
   source "#{t3o_package_url}"
   mode "0644"
-  action :create_if_missing
+  action (node['t3org']['forceInstall'] ? :create : :create_if_missing)
+  notifies :run, "bash[extract_typo3_package_can_take_some_time]"
 end
 
 #######################################
@@ -89,6 +90,8 @@ bash "extract_typo3_package_can_take_some_time" do
     tar -zxf #{t3o_package_compressed}
     chown -R root:root #{t3o_package}
   EOF
+  action :nothing
+  notifies :run, "bash[deploy_typo3_package_can_take_some_time]"
 end
 
 #######################################
@@ -121,6 +124,7 @@ bash "deploy_typo3_package_can_take_some_time" do
     # Debug
     #exit 1
   EOF
+  action :nothing
   notifies :restart, "service[apache2]"
   notifies :run, "execute[solr-updateConnections]"
 end
