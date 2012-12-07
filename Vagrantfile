@@ -4,7 +4,7 @@
 # if you don't want to develop on the TER FE or Solr search itself, feel free to comment out the t3o-solr part
 vms = {
   "t3o-web" => {
-    :hostname  => "typo3.dev t3org.dev",
+    :hostname  => "t3org.dev",
     :ipaddress => "192.168.156.122",
     :run_list => "role[typo3],role[t3org]",
     :cpus => "2",
