@@ -38,7 +38,8 @@ Vagrant::Config.run do |global_config|
 
       config.vm.box = "squeeze"
       config.vm.box_url = "http://st-g.de/fileadmin/downloads/2012-10/squeeze.box"
-      config.vm.boot_mode = :gui
+#     config.vm.boot_mode = :gui
+      config.vm.boot_mode = :headless
       config.vm.network :hostonly, ipaddress
       config.vm.host_name = name
 
