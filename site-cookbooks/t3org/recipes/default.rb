@@ -54,6 +54,16 @@ template "#{storing_directory}/restore_backup.sh" do
   mode "0755"
 end
 
+directory storing_directory do
+	action :create
+	recursive true
+end
+
+directory home_directory do
+	action :create
+	recursive true
+end
+
 #######################################
 # Download typo3 pacakge
 #######################################
