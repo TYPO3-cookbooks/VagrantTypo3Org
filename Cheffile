@@ -23,6 +23,7 @@ cookbook 'subversion', '= 0.8.3'
 cookbook 'tomcat', '= 0.11.0'
 cookbook 'timezone', '>= 0.0.1'
 cookbook 'tmux', '= 1.0.0'
+cookbook 'varnish', '= 0.9.4'
 cookbook 'xfs', '= 1.0.0'
 
 #cookbook 'chef-solo-search',
