@@ -1,0 +1,316 @@
+backend default {
+	.host = "<%= node['varnish']['backend_host'] %>";
+	.port = "<%= node['varnish']['backend_port'] %>";
+	.first_byte_timeout = 300s;
+}
+
+acl purge {
+	"127.0.0.1";
+	"<%= node['varnish']['backend_host'] %>";
+}
+
+sub vcl_recv {
+	# Strip jQuery GET parameters (_=123456789)
+	set req.url = regsuball(req.url,"\?_=[^&]+$","");
+
+	if (req.url ~ "user.xml") {
+		return (pass);
+	}
+
+
+
+	if (req.request == "PURGE") {
+		if (!client.ip ~ purge) {
+			error 405 "Not allowed.";
+		}
+		# Checking the host as well might be problematic if varnish is behind nginx
+		# purge("req.url ~ " req.url " && req.http.host == " req.http.host);
+		purge("req.url ~ " req.url );
+		error 200 "Purged. (recv)";
+
+		return (lookup);
+	}
+
+	if (req.request != "GET" &&
+		req.request != "HEAD" &&
+		req.request != "PUT" &&
+		req.request != "POST" &&
+		req.request != "TRACE" &&
+		req.request != "OPTIONS" &&
+		req.request != "DELETE") {
+		/* Non-RFC2616 or CONNECT which is weird. */
+		return (pipe);
+	}
+
+	# We only deal with GET and HEAD by default
+	if (req.request != "GET" && req.request != "HEAD") {
+		return (pass);
+	}
+
+	# Serve objects up to 24h past their expiry
+	# if the backend is slow to respond.
+	# @see https://www.varnish-cache.org/trac/wiki/BackendPolling
+	if (req.backend.healthy) {
+		set req.grace = 30s;
+	} else {
+		set req.grace = 24h;
+	}
+
+	# @see http://www.varnish-cache.org/trac/wiki/VCLExampleNormalizeAcceptEncoding
+	# parse accept encoding rulesets to normalize
+	if (req.http.Accept-Encoding) {
+		if (req.http.User-Agent ~ "MSIE 6") {
+			unset req.http.Accept-Encoding;
+		} elsif (req.url ~ "\.(jpg|jpeg|png|gif|gz|tgz|bz2|tbz|mp3|ogg|swf|mp4|flv)($|\?)") {
+			# don't try to compress already compressed files
+			remove req.http.Accept-Encoding;
+		} elsif (req.http.Accept-Encoding ~ "gzip") {
+			set req.http.Accept-Encoding = "gzip";
+		} elsif (req.http.Accept-Encoding ~ "deflate") {
+			set req.http.Accept-Encoding = "deflate";
+		} else {
+			# unkown algorithm
+			remove req.http.Accept-Encoding;
+		}
+	}
+
+	# logins need to go via pipe, so it does not break when there are multiple backends
+	if (req.url ~ "/typo3/index.php$") {
+		return (pipe);
+	}
+
+	# Some known-static file types
+	if (req.url ~ "^[^?]*\.(css|js|htc|txt|swf|flv|pdf|gif|jpe?g|png|ico|woff|ttf|eot|otf|xml|md5)($|\?)") {
+		# Pretend no cookie was passed
+		unset req.http.Cookie;
+		return (lookup);
+	}
+
+	# Temporarily do not cache requests to video feeds (mainly from Itunes)
+	# TODO: We need a new feed URL for these podcasts
+	# See http://forge.typo3.org/issues/36012
+	if (req.url ~ "/videos.*tx_podkast_pi1.*") {
+		error 750 "http://typo3.org/videos/";
+	}
+
+	# mp4 streaming must be in pipe to work with I-devices
+	# See https://www.varnish-cache.org/lists/pipermail/varnish-misc/2011-February/020065.html
+	if (req.url ~ "\.mp4$") {
+		return (pipe);
+	}
+
+	# Don't cache pages when logged in (apache authorization)
+	if (req.http.Authorization) {
+		return (pass);
+	}
+
+	if (req.http.Cookie) {
+		if (req.http.Cookie ~ "be_typo_user") {
+			# Admin Panel / Content Preview: disable caching for BE users
+			return (pass);
+		}
+
+		elsif (req.http.Cookie !~ "(e_typo_user|PHPSESSID|_pk_.*)") {
+			# Ignore any other cookies
+			unset req.http.Cookie;
+		}
+	}
+
+	return (lookup);
+}
+
+
+sub vcl_fetch {
+	# Avoid any client-side caching for these pages
+	remove beresp.http.ETag;
+
+	# TODO: check if this is needed
+	# Make sure it will not conflict with the static file types below
+	if (req.url ~ "user.xml") {
+		return (pass);
+	}
+
+	# set maximum timeouts to auto-discard stored objects
+	# @see https://www.varnish-cache.org/trac/wiki/VCLExampleGrace
+	set beresp.grace = 24h;
+
+	# Some known static file types
+	if (req.url ~ "^[^?]*\.(css|js|htc|txt|swf|flv|pdf|gif|jpe?g|png|ico|woff|ttf|eot|otf|xml|md5)($|\?)") {
+		unset beresp.http.set-cookie;
+		unset beresp.http.Pragma;
+		set beresp.http.X-Cacheable = "YES: Static resources are always cached";
+
+		# Cache in varnish for one week
+		set beresp.ttl = 1d;
+
+		# Set client age to one day
+		set beresp.http.cache-control = "public, max-age=86400";
+
+		return (deliver);
+	}
+
+	if (req.http.Cookie ~ "be_typo_user") {
+		# When a BE user is logged in, never cache the requests
+		set beresp.ttl = 0s;
+		set beresp.http.X-Cacheable = "NO: Has be_typo_user cookie";
+
+		return (pass);
+	}
+
+	if (beresp.status == 301) {
+		# Cache in varnish for one week
+		set beresp.ttl = 1d;
+
+		unset beresp.http.Set-Cookie;
+		set beresp.http.X-Cacheable = "YES: Permanent redirect";
+
+		return (deliver);
+	}
+
+	# beresp.cacheable:
+	#  A response is considered cacheable if it is valid (see above), the
+	#  HTTP status code is 200, 203, 300, 301, 302, 404 or 410 and it has a
+	#  non-zero time-to-live when Expires and Cache-Control headers are taken
+	#  into account.
+
+	# However - we trust TYPO3s X-T3Cache Header (since this could be set also without TTL)
+	if (beresp.http.X-T3Cache != "1") {
+		# add some debug headers if not cacheable
+		set beresp.http.X-Cacheable = "NO: Not Cacheable";
+		if (beresp.status >= 400) {
+			set beresp.ttl = 0s;
+			set beresp.http.X-Cacheable = "NO: Negative Lookup";
+			unset beresp.http.Set-Cookie;
+		} elseif (beresp.status == 302) {
+			set beresp.http.X-Cacheable = "NO: Redirect";
+			unset beresp.http.Set-Cookie;
+		} elseif (req.http.Authorization) {
+			set beresp.http.X-Cacheable = "NO: HTTP Auth";
+			unset beresp.http.Set-Cookie;
+		} elseif (beresp.http.X-T3setcookie) {
+			# allow session and fe_user_cookie for login
+			set beresp.http.X-Cacheable = "NO: Frontend user just logged in";
+		} elseif(req.http.X-Requested-With == "XMLHttpRequest"){
+			set beresp.http.X-Cacheable = "NO: XMLHttpRequest";
+			unset beresp.http.Set-Cookie;
+		} elseif (req.http.Cookie ~ "e_typo_user") {
+			# user is logged in, do not cache, pass backend response to client
+			set beresp.http.X-Cacheable = "NO: User might be logged in";
+		}
+
+		return (pass);
+	}
+
+	# user is not logged in, strip session cookie (and all others) from backend response,
+	# cache and deliver response to client, we do not need cookies in frontend for not logged in users
+	set beresp.http.X-Cacheable = "YES";
+	unset beresp.http.Set-Cookie;
+
+	return (deliver);
+}
+
+sub vcl_pipe {
+	# Note that only the first request to the backend will have
+	# X-Forwarded-For set.  If you use X-Forwarded-For and want to
+	# have it set for all requests, make sure to have:
+	set req.http.connection = "close";
+
+	# It is not set by default as it might break some broken web
+	# applications, like IIS with NTLM authentication.
+	# return (pipe);
+}
+
+sub vcl_hit {
+	if (req.request == "PURGE") {
+		# Note that setting ttl to 0 is magical.
+		# the object is zapped from cache.
+		set obj.ttl = 0s;
+		error 200 "Purged. (hit)";
+	}
+
+	# Force lookup if the request is a no-cache request from the client.
+	if (req.http.Cache-Control ~ "no-cache") {
+		# Ignore requests via proxy caches,  IE users and badly behaved crawlers
+		# like msnbot that send no-cache with every request.
+		if (!(req.http.Via || req.http.User-Agent ~ "bot|MSIE")) {
+			set obj.ttl = 0s;
+			return (restart);
+		}
+	}
+
+	if (obj.http.X-T3CacheInfo ~ "loginAllowedInBranch") {
+		# Avoid any client-side caching for these pages
+		set obj.http.Cache-Control = "private";
+
+		if (req.http.Cookie ~ "(e_typo_user|PHPSESSID|_pk_.*)") {
+			# Do not cache requests which come from a logged in user
+			return (pass);
+		}
+	}
+}
+
+sub vcl_miss {
+	if (req.request == "PURGE") {
+		error 404 "Not in cache.";
+	}
+}
+
+sub vcl_deliver {
+	if (obj.hits > 0) {
+		set resp.http.X-Cache = "HIT";
+		set resp.http.Server = "Varnish (HIT)";
+	} else {
+		set resp.http.X-Cache = "MISS";
+		set resp.http.Server = "Varnish (MISS)";
+	}
+}
+
+sub vcl_error {
+	if (obj.status == 750) {
+		# Fix HTTP status for temporary redirects
+		set obj.http.Location = obj.response;
+		set obj.status = 302;
+		return (deliver);
+	}
+
+	set obj.http.Content-Type = "text/html; charset=utf-8";
+
+	synthetic {"
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<head>
+	<title>"} obj.status " " obj.response {"</title>
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+</head>
+<body>
+	<script type="text/javascript">
+		function show_moreinfo(var1){
+			document.getElementById(var1).style.display="block";
+			document.getElementById(var1+"_button").style.display="none";
+		}
+	</script>
+
+	<div style="color:#949494;">
+	The requested page is not available.
+	<br/>
+	Please try again later.
+	</div>
+	<br />
+
+	<span id="moreinfo" style="display:none;border:2px #a5c642 solid; width: 550px;">
+	<span style="color:#949494;">
+		<h2>More information: </h2>
+		<h3>Error "} obj.status " " obj.response {"</h3>
+		<p>"} obj.response {"</p>
+		<p>XID: "} req.xid {"</p>
+	</span>
+	</span>
+	<br />
+	<input id="moreinfo_button" type="button" value="More information" onclick="show_moreinfo('moreinfo')"/>
+</body>
+</html>
+"};
+
+	return (deliver);
+}

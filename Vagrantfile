@@ -16,7 +16,17 @@ vms = {
     :run_list => "role[solr]",
     :cpus => "1",
     :memory => "1024"
-  }
+  },
+
+#  # if enabled, set the "t3org.dev" hostname to 192.168.156.124 in your local /etc/hosts
+#  "t3o-proxy" => {
+#    :hostname  => "t3-proxy.dev",
+#    :ipaddress => "192.168.156.124",
+#    :run_list => "role[t3org-proxy]",
+#    :cpus => "1",
+#    :memory => "512"
+#  }
+
 }
 
 Vagrant::Config.run do |global_config|
