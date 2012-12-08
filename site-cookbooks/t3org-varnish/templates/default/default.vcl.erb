@@ -9,7 +9,7 @@ acl purge {
 	"<%= node['varnish']['backend_host'] %>";
 }
 
-#normalize req url by stripping unneeded parameters
+# Normalize req url by stripping unneeded parameters
 sub normalize_req_url {
 	# Strip jQuery GET parameters (_=123456789)
 	set req.url = regsuball(req.url,"\?_=[^&]+$","");
@@ -17,21 +17,18 @@ sub normalize_req_url {
 	# Strip out Google Analytics campaign variables. They are only needed
 	# by the javascript running on the page
 	# utm_source, utm_medium, utm_campaign, gclid, ...
-	if(req.url ~ "(\?|&)(gclid|cx|ie|cof|siteurl|zanpid|utm_[a-z]+)=") {
+	if (req.url ~ "(\?|&)(gclid|cx|ie|cof|siteurl|zanpid|utm_[a-z]+)=") {
 		set req.url = regsuball(req.url, "(gclid|cx|ie|cof|siteurl|zanpid|utm_[a-z]+)=[-_A-z0-9]+&?", "");
 	}
 	set req.url = regsub(req.url, "(\?&?)$", "");
 }
 
 sub vcl_recv {
-
 	call normalize_req_url;
 
 	if (req.url ~ "user.xml") {
 		return (pass);
 	}
-
-
 
 	if (req.request == "PURGE") {
 		if (!client.ip ~ purge) {
