@@ -26,9 +26,9 @@
 #######################################
 # Variables
 #######################################
-t3o_package = "t3o-vagrant"
+t3o_package = "t3org"
 t3o_package_compressed = "t3o-vagrant-big-file-being-downloaded.tar.gz"
-t3o_package_url = "http://www.dev.t3o.typo3.org/t3o-vagrant.tar.gz"
+t3o_package_url = "http://www.dev.t3o.typo3.org/t3o-vagrant.tgz"
 storing_directory = "/var/cache/t3org.dev"
 home_directory = "/var/www/vhosts/t3org.dev"
 
@@ -47,13 +47,6 @@ end
 #######################################
 # Install restore script
 #######################################
-template "#{storing_directory}/restore_backup.sh" do
-  source "restore_backup.erb"
-  owner "root"
-  group "root"
-  mode "0755"
-end
-
 template "#{storing_directory}/postinstall.sql" do
   source "postinstall.sql"
   owner "root"
@@ -104,6 +97,27 @@ bash "extract_typo3_package_can_take_some_time" do
 end
 
 #######################################
+# Prepare database
+#######################################
+mysql_connection_info = {:host => "localhost", :username => "root", :password => node['mysql']['server_root_password']}
+
+mysql_database "flush the privileges" do
+	connection mysql_connection_info
+	sql "flush privileges"
+	action :nothing
+end
+
+mysql_database_user "t3orgdev" do
+	connection mysql_connection_info
+	password "t3orgdev"
+	database_name "t3orgdev"
+	host "localhost"
+	privileges [:all]
+	action :create
+	notifies :query, "mysql_database[flush the privileges]", :immediately
+end
+
+#######################################
 # Deploy typo3 package
 #######################################
 bash "deploy_typo3_package_can_take_some_time" do
@@ -115,10 +129,12 @@ bash "deploy_typo3_package_can_take_some_time" do
 
     echo "Reset file system..."
     rm -rf #{home_directory}
-    mkdir -p #{home_directory}
+    mkdir -p #{home_directory}/htdocs
 
-    echo "Running restore backup script which will take some time..."
-    #{storing_directory}/restore_backup.sh -u root -p root -h localhost -d t3orgdev -r #{home_directory} -s #{storing_directory}/#{t3o_package} -f
+    echo "Running install script which will take some time..."
+
+    cd #{storing_directory}/#{t3o_package}/installbinaries
+    php ./install.php --systemPath=#{home_directory} --environmentName=t3o-vagrant --skipSVNSettings=1 -f -v --silent
 
     mv #{home_directory}/htdocs #{home_directory}/www
 
