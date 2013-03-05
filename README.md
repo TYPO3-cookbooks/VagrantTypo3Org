@@ -153,3 +153,22 @@ Now, the updates can be applied and the chef magic will start.
 
 Run the following command to download and extract the site incl. database again:
 REINSTALL=true vagrant provision t3o-web
+
+## Debugging email
+
+t3o-web comes with a local mail server that keeps all mails sent via the sendmail command.
+To access all mails login via ssh to t3o-web
+
+    vagrant ssh t3o-web
+
+and start a small console email reader
+
+    mutt
+
+# Tips & Tricks
+
+  * Typing `?` shows you the inline help
+  * Typing `D` and then enter `~s .*` marks all mails for deletion.
+    If you now type `$` and confirm it your inbox should be clean again.
+    You can also enter `~d>1d` to mark all mails older than one day to be deleted.
+
