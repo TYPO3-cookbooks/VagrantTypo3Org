@@ -6,85 +6,70 @@ For the first installation, consider one good hour to walk through all the steps
 
 # Quick set up guide
 
-The first commands will check if the needed software is installed.
-
-	# Test if your system contains all the necessary software.
-	vagrant help        -> Refer to "Vagrant" and "Virtualbox" chapter if command missing
-	chef-solo --help    -> Refer to "Chef" chapter if command missing
-
-	# Download Cookbooks
-	git clone git://git.typo3.org/Teams/Server/Vagrant/Typo3Org.git
-	cd Typo3Org
-
-	# Fire up installation
-	# Refer to the troubleshooting below if anything goes wrong.
-	vagrant up
-
-	# Enter virtual machine by using vagrant itself.
-	# The default username / password is vagrant / vagrant
-	vagrant ssh t3o-web
-
-	# Test the website
-	curl t3org.dev
-
 Refer to the troubleshooting section below if any problem pops up during installation.
 
-The credentials for backend login are `admin` with password `typo3`.
+## 1. Enable virtualisation of your processor
 
-The document root of the virtual machine is mounted to the `web/htdocs/` folder inside the directory `Typo3Org`. 
+Go to the BIOS and and enable the virtualisation features of your CPU.
+The feature is usually called "VT -x" (Intel) or "AMD -v‎" (AMD).
 
-# Installation of the software
-
-## Chef
-
-To get started you need a environment as described here:
-
-  <http://wiki.opscode.com/display/chef/Workstation+Setup>
-
-You'll especially need
-
-- git
-- gcc compilers and headers (eg. XCode / build-essential)
-
-To install Chef on your system, type:
-
-	# Run as sudo if permission issue
-	gem update --system
-	gem install chef
-
-## Vagrant
-
-Vagrant can be downloaded and installed from the website [vagrantup.com](http://vagrantup.com/)
-
-	# Run as sudo if permission issue
-	gem update --system
-	gem install vagrant
-
-## VirtualBox
+## 2. Install VirtualBox
 
 Follow this download link to install VirtualBox on your system <https://www.virtualbox.org/wiki/Downloads>.
 
-## Gems
+## 3. Install Vagrant
 
-Bundler manages an application's dependencies through its entire life across many machines systematically and repeatably.
+Go to <http://downloads.vagrantup.com/tags/v1.0.7>, download and install the package for your OS.
 
-	# Run as sudo if permission issue
-	gem update --system
-	gem install bundler --no-ri --no-rdoc
+Note: At the time of writing version 1.1 and up won't work.
 
-# Configure Vagrant file
+### alternative on Linux (Debian-like)
 
-To adjust configuration open ``Vagrantfile`` file and change settings according to your needs.
+	apt-get install rubygems
+	gem install vagrant --no-rdoc --no-ri
 
-	# Activate the GUI or run in headless mode
-	config.vm.boot_mode = :gui
+## 4. Download Cookbooks
+	git clone git://git.typo3.org/Teams/Server/Vagrant/Typo3Org.git
+	cd Typo3Org
 
-	# Turn on verbose Chef logging if necessary
-	chef.log_level      = :debug
+## 5. Fire-up Vagrant
 
-## Troubleshooting
+	vagrant up
 
-### Vagrant stuck (Network issue)
+## 6. Wait
+
+Get a coffee. Or take a walk. Whatever. Vagrant might take some time to download and install everything.
+
+## 7. Edit your /etc/hosts
+
+Add the following lines to your /etc/hosts (C:/Windows/system32/drivers/etc/hosts for Windows users)
+
+	192.168.156.122 typo3.dev t3org.dev
+	192.168.156.123 t3o-solr.dev
+
+## 8. Visit your website
+
+Point your browser to <http://t3org.dev>.
+
+## 9. Have fun
+
+# Common tasks
+
+## Backend login
+
+The credentials for backend login are `admin` with password `typo3`.
+
+## SSH connection to web server
+
+Type ``vagrant ssh t3o-web`` in the Typo3Org folder and you are logged in without being asked for a password.
+
+If you connect to the machine using ``ssh t3org.dev`` or any other program use the name ``vagrant`` and the password ``vagrant``.
+
+The document root of the virtual machine is mounted to the ``/var/www/vhosts/t3org.dev/www`` folder inside the directory `Typo3Org`. 
+
+# Troubleshooting
+
+## Vagrant stuck (Network issue)
 It happens sometimes Vagrant can not finish the setup and remains stuck most likely because of networking issues. An easy workaround is to login into the Box using the GUI window (vagrant / vagrant as username / password) and to reboot the Box with "sudo reboot".
 
 - Run vagrant using the following line:
@@ -103,7 +88,7 @@ If that helps, you might try adding the following line to /etc/rc.local (right b
 
 (Source: <https://github.com/mitchellh/vagrant/issues/391>)
 
-### Mounting shared folders after VirtualBox Guest Additions upgrade fails
+## Mounting shared folders after VirtualBox Guest Additions upgrade fails
 
 If the VM upgrades the VirtualBox Guest Additions automatically and the kernel modules are rebuilt, a `vagrant up` might fail with the following error:
 
@@ -118,7 +103,7 @@ To resolve that error, just do a `vagrant reload`, which will cause the VM to re
 
 Note: If the `vagrant up` fails for setting up the first VM `t3o-web`, the second VM `t3o-solr` isn't created at all. To do so, type `vagrant up t3o-solr` (which will then very likely also fail after rebuilding the kernel modules, so just issue `vagrant reload` once again). 
 
-### Debian security updates throws a 404
+## Debian security updates throws a 404
 At your first "vagrant up", vagrant tries to apply all the chef recipes.
 During this process, it could be that there are some security updates for the Debian box.
 If the security updates throw a 404 like
@@ -149,6 +134,18 @@ And reload your VM
 
 Now, the updates can be applied and the chef magic will start.
 
+# Advanced Topics
+
+## Configure Vagrant file
+
+To adjust configuration open ``Vagrantfile`` file and change settings according to your needs.
+
+	# Activate the GUI or run in headless mode
+	config.vm.boot_mode = :gui
+
+	# Turn on verbose Chef logging if necessary
+	chef.log_level      = :debug
+
 ## Update the site to the latest version
 
 Run the following command to download and extract the site incl. database again:
@@ -165,7 +162,7 @@ and start a small console email reader
 
     mutt
 
-# Tips & Tricks
+### Tips & Tricks
 
   * Typing `?` shows you the inline help
   * Typing `D` and then enter `~s .*` marks all mails for deletion.
