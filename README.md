@@ -136,6 +136,11 @@ Now, the updates can be applied and the chef magic will start.
 
 # Advanced Topics
 
+## Suspending VMs
+
+You can suspend your VM using the command ``vagrant suspend``. This is the recommended way of
+stopping your dev environment cleanly.
+
 ## Configure Vagrant file
 
 To adjust configuration open ``Vagrantfile`` file and change settings according to your needs.
