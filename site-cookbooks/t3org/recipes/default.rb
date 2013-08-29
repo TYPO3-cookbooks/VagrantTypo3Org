@@ -82,7 +82,7 @@ end
 #######################################
 bash "extract_typo3_package_can_take_some_time" do
   only_if do
-    node['t3org']['forceInstall'] || !File.exists? ("#{storing_directory}/#{t3o_package}")
+    node['t3org']['forceInstall'] || !File.exists?("#{storing_directory}/#{t3o_package}")
   end
   user "root"
   cwd "#{storing_directory}"
@@ -122,7 +122,7 @@ end
 #######################################
 bash "deploy_typo3_package_can_take_some_time" do
   only_if do
-    node['t3org']['forceInstall'] || !File.exists? ("#{home_directory}/www/typo3/")
+    node['t3org']['forceInstall'] || !File.exists?("#{home_directory}/www/typo3/")
   end
   user "root"
   code <<-EOF
