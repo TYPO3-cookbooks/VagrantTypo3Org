@@ -67,6 +67,29 @@ If you connect to the machine using ``ssh t3org.dev`` or any other program use t
 
 The document root of the virtual machine is mounted to the ``/var/www/vhosts/t3org.dev/www`` folder inside the directory `Typo3Org`. 
 
+## Modfying files
+
+There are basically three methods to modify files on the vagrant box. Choose the one your workflow works best with.
+
+### a) changing on the server with ssh/sftp
+
+As described in the last chapter you can connect to vagrant via SSH or SFTP to change files directly on the VM.
+
+### b) shared folder
+
+Vagrant creates a shared folder for you. It is placed in the subfolder "web" on your local machine right inside
+your vagrant folder (that's where the Vagrantfile is). Whenever you change a file there it is automatically changed on the VM and vice versa.
+
+Unfortunately this might not work on a Windows Host as it does not support symlinks.
+
+Be aware that when reinstalling the VM (see below) this shared folder is deleted. Make sure to make backups outside the folder if you need this.
+
+### c) copying files via SSH
+
+If you use an IDE like PHPStorm it can take care of copying files from the VM and back. 
+
+There is a tutorial on how to this on jetbrains: <http://www.jetbrains.com/phpstorm/webhelp/working-with-web-servers-copying-files.html>
+
 # Troubleshooting
 
 ## Vagrant stuck (Network issue)
