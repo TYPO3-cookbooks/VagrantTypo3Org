@@ -19,4 +19,4 @@ default[:solr][:typo3][:plugin][:version] = "1.2.0"
 default[:solr][:typo3][:plugin][:url] = "http://www.typo3-solr.com/fileadmin/files/solr/solr-typo3-plugin-#{node.solr.typo3.plugin.version}.jar"
 
 
-default[:solr][:typo3][:repo] = "https://forge.typo3.org/projects/extension-solr/repository/revisions/master/raw/resources"
+default[:solr][:typo3][:repo] = "https://git.typo3.org/TYPO3v4/Extensions/solr.git/blob_plain/refs/heads/solr_2.8.x:/resources"
