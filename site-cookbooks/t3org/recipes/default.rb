@@ -47,13 +47,6 @@ end
 #######################################
 # Install restore script
 #######################################
-template "#{storing_directory}/postinstall.sql" do
-  source "postinstall.sql"
-  owner "root"
-  group "root"
-  mode "0755"
-end
-
 directory storing_directory do
 	action :create
 	recursive true
@@ -62,6 +55,13 @@ end
 directory home_directory do
 	action :create
 	recursive true
+end
+
+template "#{storing_directory}/postinstall.sql" do
+  source "postinstall.sql"
+  owner "root"
+  group "root"
+  mode "0755"
 end
 
 #######################################
