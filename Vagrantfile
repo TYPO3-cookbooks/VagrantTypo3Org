@@ -43,7 +43,11 @@ Vagrant::Config.run do |global_config|
       config.vm.network :hostonly, ipaddress
       config.vm.host_name = name
 
-      share_folder_options = {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
+      if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('1.2')
+        share_folder_options = {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
+      else
+        share_folder_options = {:create => true, :nfs => false, :mount_options => 'dmode=777,fmode=777'}
+      end
       # May only run on non-Windows systems (symlinks won't work otherwise
       if name == "t3o-web"
         config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", share_folder_options
