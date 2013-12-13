@@ -92,6 +92,23 @@ There is a tutorial on how to this on jetbrains: <http://www.jetbrains.com/phpst
 
 # Troubleshooting
 
+## Uncaught exception 't3lib_cache_Exception' with message 'No table to write data to has been set using the setting "cacheTable"'
+
+Still not sure why this happens, but it seems to be a bug in PHP that is not fixed in Squeeze.
+Update to a newer PHP version:
+
+Become root with `sudo -s`.
+
+Edit `/etc/apt/sources.list` and add the following line:
+
+    deb http://packages.dotdeb.org squeeze all
+
+Execute
+
+    wget http://www.dotdeb.org/dotdeb.gpg
+    apt-key add dotdeb.gpg
+    apt-get update && apt-get upgrade
+
 ## Vagrant stuck (Network issue)
 It happens sometimes Vagrant can not finish the setup and remains stuck most likely because of networking issues. An easy workaround is to login into the Box using the GUI window (vagrant / vagrant as username / password) and to reboot the Box with "sudo reboot".
 
