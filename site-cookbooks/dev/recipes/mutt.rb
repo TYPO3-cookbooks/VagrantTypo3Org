@@ -3,7 +3,7 @@ package "mutt"
 
 template "/etc/Muttrc.d/maildir.rc" do
   action :create_if_missing
-  source "mutt-maildir.rc"
+  source "mutt/mutt-maildir.rc"
   owner "root"
   group "root"
   mode "0644"

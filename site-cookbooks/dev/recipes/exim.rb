@@ -16,7 +16,7 @@ end
 
 
 template "/etc/exim4/update-exim4.conf.conf" do
-  source "update-exim4.conf.conf"
+  source "exim/update-exim4.conf.conf"
   owner "root"
   group "root"
   mode "0644"
@@ -27,7 +27,7 @@ execute "/usr/sbin/update-exim4.conf"
 
 # configure a catchall route
 template "/etc/exim4/conf.d/router/175_exim4-config_catchall" do
-  source "175_exim4-config_catchall"
+  source "exim/175_exim4-config_catchall"
   owner "root"
   group "root"
   mode "0644"
