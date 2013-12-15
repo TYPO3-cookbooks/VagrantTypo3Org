@@ -109,6 +109,8 @@ Execute
     apt-key add dotdeb.gpg
     apt-get update && apt-get upgrade
 
+When asked, keep your local version (this is default).
+
 ## Vagrant stuck (Network issue)
 It happens sometimes Vagrant can not finish the setup and remains stuck most likely because of networking issues. An easy workaround is to login into the Box using the GUI window (vagrant / vagrant as username / password) and to reboot the Box with "sudo reboot".
 
