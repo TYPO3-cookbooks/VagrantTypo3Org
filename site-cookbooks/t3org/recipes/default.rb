@@ -44,6 +44,11 @@ template "/etc/php5/apache2/php.ini" do
   notifies :restart, 'service[apache2]'
 end
 
+hostsfile_entry '192.168.156.122' do
+  hostname  't3org.dev'
+  action    :append
+end
+
 #######################################
 # Install restore script
 #######################################
