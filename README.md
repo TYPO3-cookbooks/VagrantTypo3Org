@@ -90,6 +90,11 @@ If you use an IDE like PHPStorm it can take care of copying files from the VM an
 
 There is a tutorial on how to this on jetbrains: <http://www.jetbrains.com/phpstorm/webhelp/working-with-web-servers-copying-files.html>
 
+## frontend user login
+
+In case you need a Frontend User, you can easily create one over the backend.
+Create a record on PID 11 and assign the user to `User group (activated)`.
+
 # Troubleshooting
 
 ## Uncaught exception 't3lib_cache_Exception' with message 'No table to write data to has been set using the setting "cacheTable"'
