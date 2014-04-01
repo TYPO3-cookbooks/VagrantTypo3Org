@@ -221,3 +221,17 @@ and start a small console email reader
     If you now type `$` and confirm it your inbox should be clean again.
     You can also enter `~d>1d` to mark all mails older than one day to be deleted.
 
+## Remote debugging with xdebug
+
+t3o-web is capable of running xdebug, but it this feature is turned off by default for performance reasons.
+To enable it, modify the Vagrantfile and set `features[:xdebug]` to `true`.
+
+By default xdebug is configured to connect to PhpStorm port 9000 on the VirtualBox Host. But you can also change
+that in the Vagrantfile if you use some other IDE or port.
+
+You can trigger xdebug in the browser with a browser cookie: <http://www.jetbrains.com/phpstorm/marklets/>.
+You can trigger xdebug in the CLI through environment variables like this:
+
+    XDEBUG_CONFIG="idekey=PHPSTORM remote_port=9000" SERVER_NAME=t3org.dev SERVER_PORT=80 php commandToDebug.php
+
+The `SERVER_*` variables are only needed by PhpStorm to allow proper mapping and might be left out in other IDEs.

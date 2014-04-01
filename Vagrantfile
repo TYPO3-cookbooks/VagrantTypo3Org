@@ -1,6 +1,20 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+features = {
+    # enable if provisioning fails
+    :chef_verbose => false,
+    # boot VirtualBox with GUI - usually just an annoying window, but helpful if you can't connect via SSH
+    :gui => false,
+    # run a SOLR server
+    :solr => true,
+    # if enabled, set the "t3org.dev" hostname to 192.168.156.124 in your local /etc/hosts
+    :varnish => false,
+    # is configured for PHPSTORM on port 9000 by default - check below to change the settings
+    :xdebug => false,
+}
+
+
 # if you don't want to develop on the TER FE or Solr search itself, feel free to comment out the t3o-solr part
 vms = {
   "t3o-web" => {
@@ -10,24 +24,27 @@ vms = {
     :cpus => "2",
     :memory => "1024"
   },
-  "t3o-solr" => {
+}
+
+if features[:solr]
+  vms["t3o-solr"] = {
     :hostname  => "t3o-solr.dev",
     :ipaddress => "192.168.156.123",
     :run_list => "role[solr]",
     :cpus => "1",
     :memory => "1024"
-  },
+  }
+end
 
-#  # if enabled, set the "t3org.dev" hostname to 192.168.156.124 in your local /etc/hosts
-#  "t3o-proxy" => {
-#    :hostname  => "t3-proxy.dev",
-#    :ipaddress => "192.168.156.124",
-#    :run_list => "role[t3org-proxy]",
-#    :cpus => "1",
-#    :memory => "512"
-#  }
-
-}
+if features[:varnish]
+    vms["t3o-proxy"] = {
+        :hostname  => "t3-proxy.dev",
+        :ipaddress => "192.168.156.124",
+        :run_list => "role[t3org-proxy]",
+        :cpus => "1",
+        :memory => "512"
+    }
+end
 
 Vagrant::Config.run do |global_config|
   vms.each_pair do |name, options|
@@ -38,8 +55,7 @@ Vagrant::Config.run do |global_config|
 
       config.vm.box = "squeeze"
       config.vm.box_url = "http://st-g.de/fileadmin/downloads/2012-10/squeeze.box"
-#     config.vm.boot_mode = :gui
-      config.vm.boot_mode = :headless
+      config.vm.boot_mode = features[:gui] ? :gui : :headless
       config.vm.network :hostonly, ipaddress
       config.vm.host_name = name
 
@@ -67,10 +83,34 @@ Vagrant::Config.run do |global_config|
         chef.roles_path      = ["roles"]
         chef.data_bags_path  = ["data_bags"]
 
-        chef.json = { :t3org => { :forceInstall => true } } unless ENV['REINSTALL'].nil?
+        chef.json = {}
+
+        unless ENV['REINSTALL'].nil?
+            chef.json.merge! ({
+                :t3org => {
+                    :forceInstall => true,
+                }
+            })
+        end
+
+        # uncomment to enable xdebug
+        if features[:xdebug]
+            chef.json.merge! ({
+                :dev => {
+                    :xdebug => {
+                        :remote => {
+                             :enable => true,
+                             :host => '10.0.2.2',
+                             :port => 9000,
+                             :idekey => 'PHPSTORM',
+                        }
+                    }
+                }
+            })
+        end
 
         # Turn on verbose Chef logging if necessary
-        chef.log_level      = :debug
+        chef.log_level      = features[:chef_verbose] ? :debug : :warn
 
         # List the recipies you are going to work on/need.
         run_list = []
