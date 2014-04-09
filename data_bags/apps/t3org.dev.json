@@ -40,7 +40,7 @@
     "production": "joh316"
   },
   "owner": "www-data",
-  "group": "www-data",
+  "group": "vagrant",
   "packages": {
     "curl": "",
     "php5-mysql": "",
