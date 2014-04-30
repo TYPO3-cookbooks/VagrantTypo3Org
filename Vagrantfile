@@ -110,7 +110,7 @@ Vagrant::Config.run do |global_config|
         end
 
         # Turn on verbose Chef logging if necessary
-        chef.log_level      = features[:chef_verbose] ? :debug : :warn
+        chef.log_level      = features[:chef_verbose] ? :debug : :info
 
         # List the recipies you are going to work on/need.
         run_list = []
