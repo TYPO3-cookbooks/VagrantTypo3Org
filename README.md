@@ -235,3 +235,8 @@ You can trigger xdebug in the CLI through environment variables like this:
     XDEBUG_CONFIG="idekey=PHPSTORM remote_port=9000" SERVER_NAME=t3org.dev SERVER_PORT=80 php commandToDebug.php
 
 The `SERVER_*` variables are only needed by PhpStorm to allow proper mapping and might be left out in other IDEs.
+
+## RabbitMQ
+
+RabbitMQ comes with an administration interface that you will find on <http://t3org.dev:15672>.
+Log in using the user "admin" and the password "typo3".
