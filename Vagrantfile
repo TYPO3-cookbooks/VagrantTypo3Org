@@ -8,6 +8,8 @@ features = {
     :gui => false,
     # run a SOLR server
     :solr => true,
+    # enable Rabbit MQ
+    :rabbit_mq => true,
     # if enabled, set the "t3org.dev" hostname to 192.168.156.124 in your local /etc/hosts
     :varnish => false,
     # is configured for PHPSTORM on port 9000 by default - check below to change the settings
@@ -25,6 +27,10 @@ vms = {
     :memory => "1024"
   },
 }
+
+if features[:rabbit_mq]
+  vms["t3o-web"][:run_list] += ',role[t3org-rabbitmq]'
+end
 
 if features[:solr]
   vms["t3o-solr"] = {
