@@ -68,11 +68,11 @@ languages.each do |lang|
     'synonyms.txt'
   ].each do |file|
     file_path = "typo3cores/conf/#{lang}/#{file}"
-    remote_file "#{node.solr.home}/#{file_path}" do
+    template "#{node.solr.home}/#{file_path}" do
       owner node.tomcat.user
       group node.tomcat.group
-      source "#{node.solr.typo3.repo}/solr/#{file_path}"
-      action :create_if_missing
+      source file_path
+      action :create
     end
   end
 end
@@ -92,19 +92,19 @@ end
   'solrconfig.xml'
 ].each do |file|
   file_path = "typo3cores/conf/#{file}"
-  remote_file "#{node.solr.home}/#{file_path}" do
+  template "#{node.solr.home}/#{file_path}" do
     owner node.tomcat.user
     group node.tomcat.group
-    source "#{node.solr.typo3.repo}/solr/#{file_path}"
-    action :create_if_missing
+    source file_path
+    action :create
   end
 end
 
-remote_file "#{node.tomcat.config_dir}/server.xml" do
+template "#{node.tomcat.config_dir}/server.xml" do
   owner node.tomcat.user
   group node.tomcat.group
-  source "#{node.solr.typo3.repo}/tomcat/server.xml"
-  action :create_if_missing
+  source 'tomcat/server.xml'
+  action :create
 end
 
 template "#{node.tomcat.context_dir}/solr.xml" do
