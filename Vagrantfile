@@ -46,6 +46,11 @@ if features[:varnish]
     }
 end
 
+if VagrantPlugins.const_defined?(:LibrarianChef)
+	# it will just use its own cookbooks and not the one we added in this repo
+	raise 'The vagrant plugin "vagrant-librarian-chef" is known to cause issues during provision. Please uninstall it by running "vagrant plugin uninstall vagrant-librarian-chef".'
+end
+
 Vagrant::Config.run do |global_config|
   vms.each_pair do |name, options|
     global_config.vm.define name do |config|
