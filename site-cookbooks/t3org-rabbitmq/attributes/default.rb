@@ -32,24 +32,24 @@ normal['rabbitmq']['ssl'] = false
 # to RabbitMQ, because they can see what's going on.
 default['t3org-rabbitmq']['outgoing_exchanges'] = [
     {
-        'name' => 'org.typo3.www.spam.user',
-        'queues' => %w(org.typo3.www.spam.user org.typo3.forge.spam.user)
+        'name' => 'org.typo3.spam.user',
+        'queues' => %w(org.typo3.spam.user.test org.typo3.spam.user.www org.typo3.spam.user.forge)
     },
     {
-        'name' => 'org.typo3.www.extension.version.upload',
-        'queues' => %w(org.typo3.docs.extension.version.upload)
+        'name' => 'org.typo3.ter.version.upload',
+        'queues' => %w(org.typo3.ter.version.upload.test org.typo3.ter.version.upload.docs)
     },
     {
-        'name' => 'org.typo3.www.extension.key.register',
-        'queues' => []
+        'name' => 'org.typo3.ter.key.register',
+        'queues' => %w(org.typo3.ter.key.register.test)
     },
     {
-        'name' => 'org.typo3.www.extension.key.delete',
-        'queues' => []
+        'name' => 'org.typo3.ter.key.delete',
+        'queues' => %w(org.typo3.ter.key.delete.test)
     },
     {
-        'name' => 'org.typo3.www.user.register',
-        'queues' => %w(org.typo3.forge.user.register org.typo3.gerrit.user.register org.typo3.wiki.user.register org.typo3.forum.user.register)
+        'name' => 'org.typo3.user.register',
+        'queues' => %w(org.typo3.user.register.test)
     },
 ]
 
@@ -58,5 +58,5 @@ default['t3org-rabbitmq']['outgoing_exchanges'] = [
 # technically this declaration is not needed and there is no application
 # reading from here, but this makes it easier to test if messages are read.
 default['t3org-rabbitmq']['incoming_queues'] = %w{
-  org.typo3.www.spam.user
+  org.typo3.spam.user.www
 }
