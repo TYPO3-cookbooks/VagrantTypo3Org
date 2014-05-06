@@ -19,9 +19,9 @@ Follow this download link to install VirtualBox on your system <https://www.virt
 
 ## 3. Install Vagrant
 
-Go to <http://downloads.vagrantup.com/tags/v1.0.7>, download and install the package for your OS.
+Go to <https://www.vagrantup.com/downloads.html>, download and install the package for your OS.
 
-Note: At the time of writing version 1.1 and up won't work.
+If you have any issues with the latest version, try the prior minor release.
 
 ### alternative on Linux (Debian-like)
 
