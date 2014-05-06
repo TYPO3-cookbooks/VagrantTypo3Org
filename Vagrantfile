@@ -52,7 +52,7 @@ if features[:varnish]
     }
 end
 
-if defined?(:VagrantPlugins) and VagrantPlugins.const_defined?(:LibrarianChef)
+if defined?(::VagrantPlugins::LibrarianChef)
 	# it will just use its own cookbooks and not the one we added in this repo
 	raise 'The vagrant plugin "vagrant-librarian-chef" is known to cause issues during provision. Please uninstall it by running "vagrant plugin uninstall vagrant-librarian-chef".'
 end
