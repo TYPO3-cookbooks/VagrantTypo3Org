@@ -1,4 +1,0 @@
-catchall:
-    driver  = redirect
-    domains = ! +local_domains
-    data    = vagrant@localhost
