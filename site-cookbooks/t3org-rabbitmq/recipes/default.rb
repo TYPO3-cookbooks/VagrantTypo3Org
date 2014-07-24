@@ -6,6 +6,11 @@ include_recipe "rabbitmq::mgmt_console"
 
 rabbitmqadmin_bin = '/usr/local/bin/rabbitmqadmin'
 
+# make sure http://localhost:15672 is running
+service 'rabbitmq-server' do
+  action :restart
+end
+
 remote_file rabbitmqadmin_bin do
   # this file is hosted by the rabbitmq::mgmt_console that was just installed
   source "http://localhost:15672/cli/rabbitmqadmin"
