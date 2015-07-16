@@ -86,8 +86,8 @@ Vagrant.configure('2') do |global_config|
         if (RUBY_PLATFORM =~ /mingw32/).nil?
           # TODO: Probably needs checks… cannot test mingw32 stuff…
           # May only run on non-Windows systems (symlinks won't work otherwise)
-          #config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", share_folder_options
-          #config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", share_folder_options
+          config.vm.synced_folder "tmp/package", "/var/cache/t3org.dev", share_folder_options
+          config.vm.synced_folder "web", "/var/www/vhosts/t3org.dev", share_folder_options
         end
       end
 
