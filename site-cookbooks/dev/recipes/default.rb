@@ -1,4 +1,4 @@
-include_recipe "dev::mailcatcher"
+#include_recipe "dev::mailcatcher"
 
 include_recipe "dev::vim"
 
