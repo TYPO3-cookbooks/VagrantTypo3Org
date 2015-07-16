@@ -65,7 +65,7 @@ Vagrant.configure('2') do |global_config|
   # This is a required plugin!
   # TODO: Write a check like LibrarianChef above to warn if plugin is
   # missing…
-  global_config.omnibus.chef_version = '10.16.2'
+  global_config.omnibus.chef_version = '11.18.12'
 
   vms.each_pair do |name, options|
     global_config.vm.define name do |config|
