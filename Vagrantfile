@@ -71,8 +71,8 @@ Vagrant.configure('2') do |global_config|
     global_config.vm.define name do |config|
       ipaddress = options[:ipaddress]
 
-      config.vm.box = 'typo3/squeeze'
-      config.vm.box_url = 'http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_debian-6.0.10_chef-provisionerless.box'
+      config.vm.box = "squeeze"
+      config.vm.box_url = "http://st-g.de/fileadmin/downloads/2012-10/squeeze.box"
       config.vm.network 'private_network', ip: ipaddress
       config.vm.host_name = name
 
