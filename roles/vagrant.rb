@@ -16,3 +16,7 @@ override_attributes(
      }
    }
 )
+
+run_list(
+  "recipe[chef-solo-search]"
+)
