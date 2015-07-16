@@ -3,6 +3,7 @@
 #
 # Authors:
 #       Markus Korn <markus.korn@edelight.de>
+#       Seth Chisamore <schisamo@opscode.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,61 +20,75 @@
 
 if Chef::Config[:solo]
 
-  if (defined? require_relative).nil?
-    # defenition of 'require_relative' for ruby < 1.9, found on stackoverflow.com
-    def require_relative(relative_feature)
-      c = caller.first
-      fail "Can't parse #{c}" unless c.rindex(/:\d+(:in `.*')?$/)
-      file = $`
-      if /\A\((.*)\)/ =~ file # eval, etc.
-        raise LoadError, "require_relative is called in #{$1}"
-      end
-      absolute = File.expand_path(relative_feature, File.dirname(file))
-      require absolute
-    end
+  # add currrent dir to load path
+  $: << File.dirname(__FILE__)
+
+  # All chef/solr_query/* classes were removed in Chef 11; Load vendored copy
+  # that ships with this cookbook
+  $: << File.expand_path("vendor", File.dirname(__FILE__)) if Chef::VERSION.to_i >= 11
+
+  # Ensure the treetop gem is installed and available
+  treetop_loadable = false
+  begin
+    gem 'treetop', Chef::VERSION =~ /^10/ ? '=1.4.15' : '=1.5.3'
+    require 'treetop'
+    treetop_loadable = true
+  rescue LoadError
+    run_context = Chef::RunContext.new(Chef::Node.new, {}, Chef::EventDispatch::Dispatcher.new)
+    chef_gem = Chef::Resource::ChefGem.new("treetop", run_context)
+    chef_gem.version('= 1.5.1')
+    chef_gem.run_action(:install)
+    #chef gem isn't run in whyrun mode
+    treetop_loadable = !Chef::Config[:why_run]
   end
 
-  require_relative 'parser.rb'
+  # Ensure encrypted_data_bag_secret is available (or not)
+  if Chef::Config[:encrypted_data_bag_secret] && 
+    !File.exist?(Chef::Config[:encrypted_data_bag_secret])
+
+    Chef::Log.warn "encrypted_data_bag_Secret is set but file does not exist. Unsetting"
+    Chef::Config[:encrypted_data_bag_secret] = nil
+  end
+
+  if treetop_loadable
+    require 'search/overrides'
+    require 'search/parser'
+    PARSER_LOADED = true
+  else
+    PARSER_LOADED = false
+  end
+
+  module Search; class Helper; end; end
+
+  # The search and data_bag related methods moved form `Chef::Mixin::Language`
+  # to `Chef::DSL::DataQuery` in Chef 11.
+  if Chef::VERSION.to_i >= 11
+    module Chef::DSL::DataQuery
+      def self.included(base)
+        base.send(:include, Search::Overrides) if PARSER_LOADED
+      end
+    end
+    Search::Helper.send(:include, Chef::DSL::DataQuery)
+  else
+    module Chef::Mixin::Language
+      def self.included(base)
+        base.send(:include, Search::Overrides) if PARSER_LOADED
+      end
+    end
+    Search::Helper.send(:include, Chef::Mixin::Language)
+  end
 
   class Chef
-    module Mixin
-      module Language
-
-        # Overwrite the search method of recipes to operate locally by using
-        # data found in data_bags.
-        # Only very basic lucene syntax is supported and also sorting the result
-        # is not implemented, if this search method does not support a given query
-        # an exception is raised.
-        # This search() method returns a block iterator or an Array, depending
-        # on how this method is called.
-        def search(bag_name, query=nil, sort=nil, start=0, rows=1000, &block)
-          if !sort.nil?
-            raise "Sorting search results is not supported"
-          end
-          @_query = Query.parse(query)
-          if @_query.nil?
-            raise "Query #{query} is not supported"
-          end
-          if block_given?
-            pos = 0
+    class Search
+      class Query
+        def initialize(*args)
+        end
+        def search(*args, &block)
+          if PARSER_LOADED
+            ::Search::Helper.new.search(*args, &block)
           else
-            result = []
-          end
-          data_bag(bag_name.to_s).each do |bag_item_id|
-            bag_item = data_bag_item(bag_name.to_s, bag_item_id)
-            if @_query.match(bag_item)
-              if block_given?
-                if (pos >= start and pos < (start + rows))
-                  yield bag_item
-                end
-                pos += 1
-              else
-                result << bag_item
-              end
-            end
-          end
-          if !block_given?
-            return result.slice(start, rows)
+            Chef::Log.warn("In whyrun mode, so can't perform search unless you manually install treetop in chef environment.")
+            []
           end
         end
       end
