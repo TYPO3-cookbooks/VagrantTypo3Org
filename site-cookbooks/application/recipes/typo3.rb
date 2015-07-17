@@ -29,6 +29,9 @@ app = node.run_state[:current_app]
 # We need PHP
 include_recipe "php"
 
+# We also need the "mysql" gem in Chef
+chef_gem "mysql"
+
 ## First, install any application specific packages
 if app['packages']
   app['packages'].each do |pkg,ver|
