@@ -23,6 +23,10 @@ Go to <https://www.vagrantup.com/downloads.html>, download and install the packa
 
 If you have any issues with the latest version, try the prior minor release.
 
+Also install the [vagrant-omnibus](https://github.com/chef/vagrant-omnibus) plugin:
+
+	vagrant plugin install vagrant-omnibus
+
 ### alternative on Linux (Debian-like)
 
 	apt-get install rubygems

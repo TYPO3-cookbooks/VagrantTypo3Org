@@ -1,5 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+#
+VAGRANTFILE_API_VERSION = '2'
 
 features = {
     # enable if provisioning fails
@@ -57,17 +59,21 @@ if defined?(::VagrantPlugins::LibrarianChef)
 	raise 'The vagrant plugin "vagrant-librarian-chef" is known to cause issues during provision. Please uninstall it by running "vagrant plugin uninstall vagrant-librarian-chef".'
 end
 
-Vagrant::Config.run do |global_config|
+Vagrant.configure('2') do |global_config|
+  # This is the version used previously… installed here via
+  # vagrant-omnibus from https://github.com/chef/vagrant-omnibus
+  # This is a required plugin!
+  # TODO: Write a check like LibrarianChef above to warn if plugin is
+  # missing…
+  global_config.omnibus.chef_version = '10.16.2'
+
   vms.each_pair do |name, options|
     global_config.vm.define name do |config|
       ipaddress = options[:ipaddress]
 
-      config.ssh.max_tries = 100
-
-      config.vm.box = "squeeze"
-      config.vm.box_url = "http://st-g.de/fileadmin/downloads/2012-10/squeeze.box"
-      config.vm.boot_mode = features[:gui] ? :gui : :headless
-      config.vm.network :hostonly, ipaddress
+      config.vm.box = 'typo3/squeeze'
+      config.vm.box_url = 'http://opscode-vm-bento.s3.amazonaws.com/vagrant/virtualbox/opscode_debian-6.0.10_chef-provisionerless.box'
+      config.vm.network 'private_network', ip: ipaddress
       config.vm.host_name = name
 
       if Gem::Version.new(Vagrant::VERSION) >= Gem::Version.new('1.2')
@@ -75,21 +81,17 @@ Vagrant::Config.run do |global_config|
       else
         share_folder_options = {:create => true, :nfs => false, :extra => 'dmode=777,fmode=777'}
       end
+
       if name == "t3o-web"
         if (RUBY_PLATFORM =~ /mingw32/).nil?
+          # TODO: Probably needs checks… cannot test mingw32 stuff…
           # May only run on non-Windows systems (symlinks won't work otherwise)
-          config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", share_folder_options
-          config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", share_folder_options
+          #config.vm.share_folder "package", "/var/cache/t3org.dev", "./tmp/package", share_folder_options
+          #config.vm.share_folder "web", "/var/www/vhosts/t3org.dev", "./web", share_folder_options
         end
       end
 
-      config.vm.share_folder "apt-cache", "/var/cache/apt/archives", "./tmp/apt", {:create => true}
-
-      # set auto_update to false, if do NOT want to check the correct additions
-      # version when booting this machine
-      #config.vbguest.auto_update = false
-
-      config.vm.provision :chef_solo do |chef|
+      config.vm.provision 'chef_solo' do |chef|
         chef.cookbooks_path  = ["cookbooks", "site-cookbooks"]
         chef.roles_path      = ["roles"]
         chef.data_bags_path  = ["data_bags"]
@@ -130,23 +132,29 @@ Vagrant::Config.run do |global_config|
         run_list << "role[vagrant]"
         run_list << ENV['CHEF_RUN_LIST'].split(",") if ENV.has_key?('CHEF_RUN_LIST')
         chef.run_list = [run_list, options[:run_list].split(",")].flatten
-
       end
 
-      config.vm.customize [
-        "modifyvm", :id,
-        "--name", name,
-        "--memory", options[:memory] || "1024",
-        "--cpus", options[:cpus] || "1"
-      ]
-      config.vm.customize [
-        "setextradata", :id,
-        "VBoxInternal2/SharedFoldersEnableSymlinksCreate/package", "1"
-      ]
-      config.vm.customize [
-        "setextradata", :id,
-        "VBoxInternal2/SharedFoldersEnableSymlinksCreate/web", "1"
-      ]
+      config.vm.provider 'virtualbox' do |v, override|
+        v.name = name
+        v.memory = options[:memory] || "1024"
+        v.cpus = 1
+        v.gui = features[:gui]
+        v.customize [
+          "setextradata", :id,
+          "VBoxInternal2/SharedFoldersEnableSymlinksCreate/package", "1"
+        ]
+        v.customize [
+          "setextradata", :id,
+          "VBoxInternal2/SharedFoldersEnableSymlinksCreate/web", "1"
+        ]
+      end
+
+      config.vm.provider 'vmware_fusion' do |v, override|
+        v.vmx['memsize'] = options[:memory] || "1024"
+        v.vmx['numvcpus'] = 1
+        v.gui = features[:gui]
+        override.vm.box_url = 'http://opscode-vm-bento.s3.amazonaws.com/vagrant/vmware/opscode_debian-6.0.10_chef-provisionerless.box'
+      end
     end
   end
 end
