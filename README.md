@@ -212,7 +212,7 @@ REINSTALL=true vagrant provision t3o-web
 t3o-web comes with a local mail server that you can access in your browser.
 Mails from the TYPO3 installation will be automatically send there and will **never** leave your computer.
 
-Go to <http://t3org.dev:1080/> to see all received mails.
+Go to <http://t3org.dev:8025/> to see all received mails.
 
 If you need any other application to sent mails there use the SMTP service on port 1025.
 
