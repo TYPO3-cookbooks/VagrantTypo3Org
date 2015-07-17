@@ -1,4 +1,5 @@
 #include_recipe "dev::mailcatcher"
+include_recipe "mailhog"
 
 include_recipe "dev::vim"
 

@@ -6,3 +6,5 @@ long_description ""
 version          "1.0.0"
 
 recipe "vim", "Install vim (instead of vi)"
+
+depends "mailhog"

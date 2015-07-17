@@ -11,3 +11,4 @@ default['dev']['mailcatcher']['listen_ip'] = '0.0.0.0'
 # setting needed for composer
 include_attribute 'php'
 normal['php']['directives']['suhosin.executor.include.whitelist'] = 'phar'
+normal['php']['directives']['sendmail_path'] = node['mailhog']['binary']['path'] + ' sendmail'
