@@ -1,4 +1,3 @@
-#
 # Cookbook Name:: erlang
 # Recipe:: default
 # Author:: Joe Williams <joe@joetify.com>
@@ -22,26 +21,29 @@
 #
 
 case node['platform_family']
-when 'debian'
-  erlpkg = node['erlang']['gui_tools'] ? 'erlang-x11' : 'erlang-nox'
+when "debian"
+
+  erlpkg = node['erlang']['gui_tools'] ? "erlang-x11" : "erlang-nox"
+
   package erlpkg
-  package 'erlang-dev'
+  package "erlang-dev"
 
-when 'rhel'
-  case node['platform_version'].to_i
-  when 5
-    include_recipe 'yum-epel'
+when "rhel"
 
-    yum_repository 'EPELErlangrepo' do
-      description "Updated erlang yum repository for RedHat / Centos 5.x - #{node['kernel']['machine']}"
-      baseurl 'http://repos.fedorapeople.org/repos/peter/erlang/epel-5Server/$basearch'
-      gpgcheck false
-      action :create
-    end
+  include_recipe "yum::epel"
 
-  else
-    include_recipe 'yum-erlang_solutions'
+  yum_repository "erlang" do
+    name "EPELErlangrepo"
+    url "http://repos.fedorapeople.org/repos/peter/erlang/epel-5Server/$basearch"
+    description "Updated erlang yum repository for RedHat / Centos 5.x - #{node['kernel']['machine']}"
+    action :add
+    only_if { node['platform_version'].to_f >= 5.0 && node['platform_version'].to_f < 6.0 }
   end
 
-  package 'erlang'
+  package "erlang"
+
+else
+
+  package "erlang"
+
 end
