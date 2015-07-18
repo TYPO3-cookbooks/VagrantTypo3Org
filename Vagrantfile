@@ -59,6 +59,12 @@ if defined?(::VagrantPlugins::LibrarianChef)
 	raise 'The vagrant plugin "vagrant-librarian-chef" is known to cause issues during provision. Please uninstall it by running "vagrant plugin uninstall vagrant-librarian-chef".'
 end
 
+unless Vagrant.has_plugin?("vagrant-omnibus")
+  print "please execute the following command to enable automated provisioning\n\n"
+  print "vagrant plugin install vagrant-omnibus"
+  exit
+end
+
 Vagrant.configure('2') do |global_config|
   # This is the version used previously… installed here via
   # vagrant-omnibus from https://github.com/chef/vagrant-omnibus
