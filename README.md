@@ -11,7 +11,7 @@ Refer to the troubleshooting section below if any problem pops up during install
 ## 1. Enable virtualisation of your processor
 
 Go to the BIOS and and enable the virtualisation features of your CPU.
-The feature is usually called "VT -x" (Intel) or "AMD -v‎" (AMD).
+The feature is usually called "VT -x" (Intel) or "AMD -v" (AMD).
 
 ## 2. Install VirtualBox
 
