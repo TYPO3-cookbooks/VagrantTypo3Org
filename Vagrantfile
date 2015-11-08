@@ -97,6 +97,19 @@ Vagrant.configure('2') do |global_config|
         end
       end
 
+      config.vm.provision 'shell', inline: <<-SHELL
+        # Execute aptitude update to update apt sources despite to missing GPG key
+        # TODO: Get GPG key for all apt sources
+        sudo aptitude update
+        # Installation of needed packages for mysql gem
+        sudo aptitude install -y make libmysqld-dev libmysql++-dev libmysqlclient-dev
+        # Download of MailHog
+        cd /usr/local/bin/
+        sudo wget -q http://github.com/mailhog/MailHog/releases/download/v0.1.6/MailHog_linux_amd64 -O MailHog
+        # Make MailHog executable
+        sudo chmod +x MailHog
+      SHELL
+
       config.vm.provision 'chef_solo' do |chef|
         chef.cookbooks_path  = ["cookbooks", "site-cookbooks"]
         chef.roles_path      = ["roles"]

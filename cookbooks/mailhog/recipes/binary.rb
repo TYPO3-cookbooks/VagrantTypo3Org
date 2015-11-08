@@ -36,12 +36,14 @@ else
 end
 
 # Download and install binary file
-remote_file node['mailhog']['binary']['path'] do
-  source binary_url
-  checksum checksum
-  mode node['mailhog']['binary']['mode']
-  action :create
-end
+# TODO: Due to the old Chef version the download is not working
+# Download will be done via shell script in Vagrantfile
+#remote_file node['mailhog']['binary']['path'] do
+#  source binary_url
+#  checksum checksum
+#  mode node['mailhog']['binary']['mode']
+#  action :create
+#end
 
 # Setup runit service
 runit_service 'mailhog' do
