@@ -98,6 +98,8 @@ Vagrant.configure('2') do |global_config|
       end
 
       config.vm.provision 'shell', inline: <<-SHELL
+        # Fix Debian repository URL after Squeeze has been archived
+        find /etc/apt/sources.list /etc/apt/sources.list.d/ -type f | xargs sed -i "s/ftp.de.debian.org/archive.debian.org/; s/http.debian.net/archive.debian.org/; /squeeze-updates/d"
         # Execute aptitude update to update apt sources despite to missing GPG key
         # TODO: Get GPG key for all apt sources
         sudo aptitude update
